@@ -1,7 +1,7 @@
 <?php
 $host = 'localhost';
 $port = '5432';
-$dbname = 'web_db';
+$dbname = 'WasteWise';
 $user = 'postgres';
 $password = 'admin';
 

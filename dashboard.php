@@ -1,7 +1,7 @@
 <?php
 require_once 'db.php';
 session_start();
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header('Location: login.php');
     exit;
 }
@@ -16,8 +16,7 @@ try {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if all fields are set in POST
-    if (isset($_POST['name'], $_POST['phone'], $_POST['address'], $_POST['waste_type'], $_POST['comments'], $_POST['scheduled_date'], $_POST['scheduled_time'])) {
-        $name = $_POST['name'];
+    if (isset($_POST['phone'], $_POST['address'], $_POST['waste_type'], $_POST['comments'], $_POST['scheduled_date'], $_POST['scheduled_time'])) {
         $phone = $_POST['phone'];
         $address = $_POST['address'];
         $waste_type = $_POST['waste_type'];
@@ -26,10 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $scheduled_time = $_POST['scheduled_time'];
 
         try {
-            $stmt = $pdo->prepare("INSERT INTO schedules (user_id, name, phone, address, waste_type, comments, scheduled_date, scheduled_time) VALUES (:user_id, :name, :phone, :address, :waste_type, :comments, :scheduled_date, :scheduled_time)");
+            $stmt = $pdo->prepare("
+                INSERT INTO schedules (user_id, phone, address, waste_type, comments, scheduled_date, scheduled_time)
+                VALUES (:user_id, :phone, :address, :waste_type, :comments, :scheduled_date, :scheduled_time)
+            ");
             $stmt->execute([
                 'user_id' => $_SESSION['user_id'],
-                'name' => $name,
                 'phone' => $phone,
                 'address' => $address,
                 'waste_type' => $waste_type,
@@ -45,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<p style='color: red;'>Please fill out all required fields.</p>";
     }
 }
+
 
 ?>
 
@@ -139,8 +141,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="content-container">
         <h2>Schedule Waste Pick-Up</h2>
         <form method="POST">
-    <label for="name">Full Name</label>
-    <input type="text" id="name" name="name" placeholder="Enter your full name" required>
 
     <label for="phone">Phone Number</label>
     <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>

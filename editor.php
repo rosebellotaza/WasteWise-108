@@ -2,8 +2,8 @@
 require_once 'db.php';
 session_start();
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_id'])) {
+// Check if the user is logged in and is an admin
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit;
 }
@@ -15,28 +15,21 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Fetch schedules
-$query = "SELECT s.*, u.username FROM schedules s JOIN users u ON s.user_id = u.id ORDER BY s.created_at DESC";
-$stmt = $pdo->prepare($query);
-$stmt->execute();
-$schedules = $stmt->fetchAll();
-
-// Fetch activity logs
-// Fetch activity logs
-$filter_sql = "SELECT id, timestamp, user_type, action, table_name, column_name 
-               FROM activity_logs 
-               ORDER BY timestamp DESC";
-$stmt = $pdo->prepare($filter_sql);
-$stmt->execute();
-$logs = $stmt->fetchAll();
-
+try {
+    // Fetch all schedules with user information
+    $stmt = $pdo->prepare("\n        SELECT \n            schedules.id, \n            schedules.phone, \n            schedules.address, \n            schedules.waste_type, \n            schedules.scheduled_date, \n            schedules.scheduled_time, \n            schedules.comments, \n            schedules.created_at,
+            users.username \n        FROM schedules \n        INNER JOIN users ON schedules.user_id = users.id\n        ORDER BY schedules.created_at DESC\n    ");
+    $stmt->execute();
+    $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Error: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
         body {
@@ -58,6 +51,19 @@ $logs = $stmt->fetchAll();
         .header h1 {
             margin: 0;
             font-size: 20px;
+        }
+
+        .back-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #45a049;
         }
 
         .logout {
@@ -111,20 +117,11 @@ $logs = $stmt->fetchAll();
         table tr:hover {
             background-color: #f1f1f1;
         }
-
-        .actions a {
-            margin-right: 10px;
-            color: #007BFF;
-            text-decoration: none;
-        }
-
-        .actions a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
     <div class="header">
+        <a href="admin_dashboard.php" class="back-btn">&larr; Back</a>
         <h1>Admin Dashboard</h1>
         <a href="?logout=true" class="logout">Logout</a>
     </div>
@@ -158,8 +155,6 @@ $logs = $stmt->fetchAll();
                             <td><?php echo htmlspecialchars($schedule['scheduled_time']); ?></td>
                             <td><?php echo htmlspecialchars($schedule['comments']); ?></td>
                             <td><?php echo htmlspecialchars($schedule['created_at']); ?></td>
-
-                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -170,39 +165,5 @@ $logs = $stmt->fetchAll();
             </tbody>
         </table>
     </div>
-
-    <div class="container">
-    <h2>Activity Logs</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Timestamp</th>
-                <th>User Type</th>
-                <th>Action</th>
-                <th>Table Name</th>
-                <th>Column Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (count($logs) > 0): ?>
-                <?php foreach ($logs as $log): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($log['id']); ?></td>
-                        <td><?php echo htmlspecialchars($log['timestamp']); ?></td>
-                        <td><?php echo htmlspecialchars($log['user_type']); ?></td>
-                        <td><?php echo htmlspecialchars($log['action']); ?></td>
-                        <td><?php echo htmlspecialchars($log['table_name']); ?></td>
-                        <td><?php echo htmlspecialchars($log['column_name']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="6" style="text-align: center;">No activity logs found.</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
 </body>
 </html>
