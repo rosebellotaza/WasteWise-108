@@ -147,7 +147,161 @@ $logs = $stmt->fetchAll();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Existing Head Content -->
+    <style>
+                .actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        /* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f9fc;
+}
+
+.header {
+    background-color: #4B8B3B;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    position: relative;
+}
+
+.header a.logout {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    background-color: #dc3545;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.header a.logout:hover {
+    background-color: #c82333;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.btn-update, .btn-delete {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-update {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-update:hover {
+            background-color: #45a049;
+        }
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #d32f2f;
+        }
+
+.container h2 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+/* Form Styling */
+form {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+form .form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+
+form input, form textarea, form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+form textarea {
+    resize: vertical;
+}
+
+form button.btn-submit {
+    background-color: #4B8B3B;
+    color: white;
+    padding: 5px 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    height: 80px;
+}
+
+form button.btn-submit:hover {
+    background-color: #3a6f2e;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table thead {
+    background-color: #4B8B3B;
+    color: white;
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+    }
+}
+
+    </style>
 </head>
 <body>
     <div class="header">
@@ -157,20 +311,49 @@ $logs = $stmt->fetchAll();
 
     <!-- Add Schedule Section -->
 <!-- Add Schedule Section -->
+<!-- Add Schedule Section -->
 <div class="container">
-        <h2>Add New Schedule</h2>
-        <form method="POST" action="">
-            <input type="hidden" name="action" value="insert">
-            <input type="text" name="username" placeholder="User" required />
-            <input type="text" name="phone" placeholder="Phone" required />
-            <input type="text" name="address" placeholder="Address" required />
-            <input type="text" name="waste_type" placeholder="Waste Type" required />
-            <input type="date" name="scheduled_date" required />
-            <input type="time" name="scheduled_time" required />
-            <textarea name="comments" placeholder="Comments"></textarea>
-            <button type="submit" class="btn-insert">Add Schedule</button>
-        </form>
-    </div>
+    <h2>Add New Schedule</h2>
+    <form method="POST" action="">
+        <input type="hidden" name="action" value="insert">
+        <div class="form-group">
+            <label for="username">User</label>
+            <input type="text" id="username" name="username" placeholder="Enter username" required />
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" placeholder="Enter phone number" required />
+        </div>
+        <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Enter address" required />
+        </div>
+        <div class="form-group">
+            <label for="waste_type">Waste Type</label>
+            <select id="waste_type" name="waste_type" required>
+                <option value="">Select Waste Type</option>
+                <option value="bio">Bio</option>
+                <option value="non-bio">Non-Bio</option>
+                <option value="recyclable">Recyclable</option>
+                <option value="electronic">Electronic</option>
+                <option value="special">Special</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="scheduled_date">Scheduled Date</label>
+            <input type="date" id="scheduled_date" name="scheduled_date" required />
+        </div>
+        <div class="form-group">
+            <label for="scheduled_time">Scheduled Time</label>
+            <input type="time" id="scheduled_time" name="scheduled_time" required />
+        </div>
+        <div class="form-group">
+            <label for="comments">Comments</label>
+            <textarea id="comments" name="comments" placeholder="Enter comments (optional)"></textarea>
+        </div>
+        <button type="submit" class="btn btn-submit">Add Schedule</button>
+    </form>
+</div>
 
 
     <!-- Schedules Section -->
@@ -205,11 +388,12 @@ $logs = $stmt->fetchAll();
                             <td><?php echo htmlspecialchars($schedule['comments']); ?></td>
                             <td><?php echo htmlspecialchars($schedule['created_at']); ?></td>
                             <td class="actions">
-                                <form method="POST" action="" style="display:inline;">
+                            <form method="POST" action="" style="display:inline;">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['id']); ?>">
                                     <button type="submit" class="btn-update">Update</button>
                                 </form>
+
                                 <form method="POST" action="" style="display:inline;">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['id']); ?>">
