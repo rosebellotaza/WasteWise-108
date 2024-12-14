@@ -62,8 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 
-
-
 // Insert a new schedule
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'insert') {
     $username = $_POST['username'];
@@ -74,25 +72,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $scheduled_time = $_POST['scheduled_time'];
     $comments = $_POST['comments'];
 
-    $query = "INSERT INTO schedules (user_id, phone, address, waste_type, scheduled_date, scheduled_time, comments) 
-              VALUES ((SELECT id FROM users WHERE username = :username), :phone, :address, :waste_type, :scheduled_date, :scheduled_time, :comments)";
+    // Fetch user id from the username
+    $query = "SELECT id FROM users WHERE username = :username";
     $stmt = $pdo->prepare($query);
+    $stmt->execute([':username' => $username]);
+    $user = $stmt->fetch();
 
-    try {
-        $stmt->execute([
-            ':username' => $username,
-            ':phone' => $phone,
-            ':address' => $address,
-            ':waste_type' => $waste_type,
-            ':scheduled_date' => $scheduled_date,
-            ':scheduled_time' => $scheduled_time,
-            ':comments' => $comments
-        ]);
-        echo "Schedule added successfully.";
-        header('Location: admin_dashboard.php');
-        exit;
-    } catch (Exception $e) {
-        echo "Error: " . $e->getMessage();
+    if ($user) {
+        $user_id = $user['id'];
+        
+        // Insert schedule into the database
+        $query = "INSERT INTO schedules (user_id, phone, address, waste_type, scheduled_date, scheduled_time, comments) 
+                  VALUES (:user_id, :phone, :address, :waste_type, :scheduled_date, :scheduled_time, :comments)";
+        $stmt = $pdo->prepare($query);
+
+        try {
+            $stmt->execute([
+                ':user_id' => $user_id,
+                ':phone' => $phone,
+                ':address' => $address,
+                ':waste_type' => $waste_type,
+                ':scheduled_date' => $scheduled_date,
+                ':scheduled_time' => $scheduled_time,
+                ':comments' => $comments
+            ]);
+            echo "Schedule added successfully.";
+            header('Location: admin_dashboard.php');
+            exit;
+        } catch (Exception $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    } else {
+        echo "User not found.";
     }
 }
 
@@ -145,7 +156,8 @@ $logs = $stmt->fetchAll();
     </div>
 
     <!-- Add Schedule Section -->
-    <div class="container">
+<!-- Add Schedule Section -->
+<div class="container">
         <h2>Add New Schedule</h2>
         <form method="POST" action="">
             <input type="hidden" name="action" value="insert">
@@ -159,6 +171,7 @@ $logs = $stmt->fetchAll();
             <button type="submit" class="btn-insert">Add Schedule</button>
         </form>
     </div>
+
 
     <!-- Schedules Section -->
     <div class="container">
@@ -255,9 +268,7 @@ $logs = $stmt->fetchAll();
                 <table class="table table-striped">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Date & Time</th>
-            <th>User ID</th>
             <th>User Type</th>
             <th>Action</th>
             <th>Table Name</th>
@@ -268,12 +279,10 @@ $logs = $stmt->fetchAll();
         <?php
         try {
             // Fetch activity logs from the database
-            $stmt = $pdo->query('SELECT id, user_id, user_type, action, table_name, column_name, TO_CHAR(timestamp, \'YYYY-MM-DD HH24:MI\') AS formatted_timestamp FROM activity_logs ORDER BY timestamp DESC');
+            $stmt = $pdo->query('SELECT user_type, action, table_name, column_name, TO_CHAR(timestamp, \'YYYY-MM-DD HH24:MI\') AS formatted_timestamp FROM activity_logs ORDER BY timestamp DESC');
             while ($row = $stmt->fetch()) {
                 echo "<tr>";
-                echo "<td>" . htmlspecialchars($row['id']) . "</td>";
                 echo "<td>" . htmlspecialchars($row['formatted_timestamp']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['user_id']) . "</td>";
                 echo "<td>" . htmlspecialchars($row['user_type']) . "</td>";
                 echo "<td>" . htmlspecialchars($row['action']) . "</td>";
                 echo "<td>" . htmlspecialchars($row['table_name']) . "</td>";

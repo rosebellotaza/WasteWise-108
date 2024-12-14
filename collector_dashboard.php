@@ -46,33 +46,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
 
 
 // Handle schedule update if form is submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_collector'])) {
-    $schedule_id = $_POST['schedule_id'];
-    $phone = htmlspecialchars($_POST['phone']);
-    $address = htmlspecialchars($_POST['address']);
-    $waste_type = htmlspecialchars($_POST['waste_type']);
-    $scheduled_date = htmlspecialchars($_POST['scheduled_date']);
-    $scheduled_time = htmlspecialchars($_POST['scheduled_time']);
-    $comments = htmlspecialchars($_POST['comments']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
+    $schedule_id = $_POST['schedule_id'] ?? null;
+    $phone = $_POST['phone'] ?? null;
+    $address = $_POST['address'] ?? null;
+    $waste_type = $_POST['waste_type'] ?? null;
+    $scheduled_date = $_POST['scheduled_date'] ?? null;
+    $scheduled_time = $_POST['scheduled_time'] ?? null;
+    $comments = $_POST['comments'] ?? null;
 
-    // Update the schedule in the database
-    try {
-        $stmt = $pdo->prepare('UPDATE schedules SET phone = ?, address = ?, waste_type = ?, scheduled_date = ?, scheduled_time = ?, comments = ? WHERE id = ?');
-        $stmt->execute([$phone, $address, $waste_type, $scheduled_date, $scheduled_time, $comments, $schedule_id]);
-        $message = 'Schedule updated successfully!';
-    } catch (Exception $e) {
-        $message = 'Error updating schedule: ' . $e->getMessage();
+    if ($schedule_id && $phone && $address && $waste_type && $scheduled_date && $scheduled_time) {
+        $query = "UPDATE schedules SET 
+                    phone = :phone, 
+                    address = :address, 
+                    waste_type = :waste_type, 
+                    scheduled_date = :scheduled_date, 
+                    scheduled_time = :scheduled_time, 
+                    comments = :comments
+                  WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+
+        try {
+            // Update the schedule
+            $stmt->execute([
+                ':phone' => $phone,
+                ':address' => $address,
+                ':waste_type' => $waste_type,
+                ':scheduled_date' => $scheduled_date,
+                ':scheduled_time' => $scheduled_time,
+                ':comments' => $comments,
+                ':id' => $schedule_id
+            ]);
+
+            // Log the update action in activity_logs
+            $logQuery = "INSERT INTO activity_logs (user_id, user_type, action) VALUES (:user_id, :user_type, :action)";
+            $logStmt = $pdo->prepare($logQuery);
+            
+            $logDescription = "Updated schedule ID $schedule_id with phone: $phone, address: $address, waste type: $waste_type, date: $scheduled_date, time: $scheduled_time.";
+            $logStmt->execute([
+                ':user_id' => $_SESSION['user_id'],
+                ':user_type' => 'collector',  // User type set as 'collector'
+                ':action' => $logDescription,
+            ]);
+            
+
+
+            // Redirect back to dashboard
+            header('Location: collector_dashboard.php');
+            exit;
+        } catch (Exception $e) {
+            echo "Error updating schedule: " . $e->getMessage();
+        }
     }
 }
 
-// Fetch schedules from the database
-try {
-    $stmt = $pdo->prepare('SELECT schedules.*, users.username FROM schedules JOIN users ON schedules.user_id = users.id ORDER BY schedules.created_at DESC');
-    $stmt->execute();
-    $schedules = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    die('Error fetching schedules: ' . $e->getMessage());
-}
+
+// Fetch schedules
+$query = "SELECT s.*, u.username 
+          FROM schedules s 
+          JOIN users u ON s.user_id = u.id 
+          ORDER BY s.created_at DESC";
+$stmt = $pdo->prepare($query);
+$stmt->execute();
+$schedules = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -186,25 +222,6 @@ try {
         form button:hover {
             background-color: #45a049;
         }
-        /* Modal Styles */
-        #updateScheduleModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        #updateScheduleModal > div {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 500px;
-        }
     </style>
 </head>
 <body>
@@ -229,6 +246,8 @@ try {
     </div>
 
     <!-- Schedules Table -->
+    
+    <!-- Schedules Section -->
     <div class="container">
         <h2>Schedules</h2>
         <table>
@@ -247,7 +266,7 @@ try {
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($schedules)): ?>
+                <?php if (count($schedules) > 0): ?>
                     <?php foreach ($schedules as $schedule): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($schedule['id']); ?></td>
@@ -260,10 +279,17 @@ try {
                             <td><?php echo htmlspecialchars($schedule['comments']); ?></td>
                             <td><?php echo htmlspecialchars($schedule['created_at']); ?></td>
                             <td class="actions">
-                                <button type="button" class="btn-update" onclick="openUpdateForm(<?php echo htmlspecialchars($schedule['id']); ?>, '<?php echo htmlspecialchars($schedule['phone']); ?>', '<?php echo htmlspecialchars($schedule['address']); ?>', '<?php echo htmlspecialchars($schedule['waste_type']); ?>', '<?php echo htmlspecialchars($schedule['scheduled_date']); ?>', '<?php echo htmlspecialchars($schedule['scheduled_time']); ?>', '<?php echo htmlspecialchars($schedule['comments']); ?>')">Update</button>
+                                <!-- Only show 'Update' button and form for the schedules list -->
                                 <form method="POST" action="" style="display:inline;">
+                                    <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['id']); ?>">
-                                    <button type="submit" name="delete" class="btn-delete">Delete</button>
+                                    <button type="submit" class="btn-update">Update</button>
+                                </form>
+
+                                <form method="POST" action="" style="display:inline;">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['id']); ?>">
+                                    <button type="submit" class="btn-delete">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -277,45 +303,29 @@ try {
         </table>
     </div>
 
-    <!-- Update Schedule Form Modal -->
-    <div id="updateScheduleModal">
-        <div>
-            <h3>Update Schedule</h3>
+    <!-- Update Form -->
+    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update'): ?>
+        <?php
+        $schedule_id = $_POST['schedule_id'];
+        $query = "SELECT * FROM schedules WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([':id' => $schedule_id]);
+        $schedule = $stmt->fetch();
+        ?>
+        <div class="container">
+            <h2>Update Schedule</h2>
             <form method="POST" action="">
-                <input type="hidden" name="schedule_id" id="schedule_id">
-                <label for="phone">Phone:</label><br>
-                <input type="text" name="phone" id="phone"><br><br>
-                <label for="address">Address:</label><br>
-                <input type="text" name="address" id="address"><br><br>
-                <label for="waste_type">Waste Type:</label><br>
-                <input type="text" name="waste_type" id="waste_type"><br><br>
-                <label for="scheduled_date">Date:</label><br>
-                <input type="date" name="scheduled_date" id="scheduled_date"><br><br>
-                <label for="scheduled_time">Time:</label><br>
-                <input type="time" name="scheduled_time" id="scheduled_time"><br><br>
-                <label for="comments">Comments:</label><br>
-                <textarea name="comments" id="comments"></textarea><br><br>
-                <button type="submit" name="update_collector" class="btn-update">Update</button>
-                <button type="button" onclick="closeUpdateForm()">Cancel</button>
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['id']); ?>">
+                <input type="text" name="phone" placeholder="Phone" value="<?php echo htmlspecialchars($schedule['phone']); ?>" required />
+                <input type="text" name="address" placeholder="Address" value="<?php echo htmlspecialchars($schedule['address']); ?>" required />
+                <input type="text" name="waste_type" placeholder="Waste Type" value="<?php echo htmlspecialchars($schedule['waste_type']); ?>" required />
+                <input type="date" name="scheduled_date" value="<?php echo htmlspecialchars($schedule['scheduled_date']); ?>" required />
+                <input type="time" name="scheduled_time" value="<?php echo htmlspecialchars($schedule['scheduled_time']); ?>" required />
+                <textarea name="comments" placeholder="Comments"><?php echo htmlspecialchars($schedule['comments']); ?></textarea>
+                <button type="submit" class="btn-update">Update Schedule</button>
             </form>
         </div>
-    </div>
-
-    <script>
-        function openUpdateForm(id, phone, address, waste_type, scheduled_date, scheduled_time, comments) {
-            document.getElementById('schedule_id').value = id;
-            document.getElementById('phone').value = phone;
-            document.getElementById('address').value = address;
-            document.getElementById('waste_type').value = waste_type;
-            document.getElementById('scheduled_date').value = scheduled_date;
-            document.getElementById('scheduled_time').value = scheduled_time;
-            document.getElementById('comments').value = comments;
-            document.getElementById('updateScheduleModal').style.display = 'flex';
-        }
-
-        function closeUpdateForm() {
-            document.getElementById('updateScheduleModal').style.display = 'none';
-        }
-    </script>
+    <?php endif; ?>
 </body>
 </html>

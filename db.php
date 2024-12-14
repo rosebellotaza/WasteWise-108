@@ -2,8 +2,8 @@
 $host = 'localhost';
 $port = '5432';
 $dbname = 'WW';
-$user = 'admin';
-$password = 'rosebell';
+$user = 'collector';
+$password = 'collector';
 
 try {
     // PDO connection
