@@ -17,7 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($user['role'] === 'admin') {
                 header('Location: admin_dashboard.php');
-            } else {
+            } 
+            else if ($user['role'] === 'collector') {
+                header('Location: collector_dashboard.php');
+            }else {
                 header('Location: dashboard.php');
             }
             exit;
@@ -30,109 +33,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - User Account</title>
     <style>
-        /* General Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
 
-        /* Page Background */
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: linear-gradient(135deg, #e3eafc, #d9d9d9);
-            height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            min-height: 100vh;
+            background: linear-gradient(to right, #4CAF50, #2E7D32);
+            color: #fff;
         }
 
-        /* Logo Section */
         .logo-container {
+            text-align: center;
             margin-bottom: 20px;
         }
 
         .logo-container img {
-            height: 100px;
-            width: auto;
+            width: 120px;
+            height: auto;
         }
 
-        /* Login Form Styling */
         .form-container {
-            background-color: #ffffff;
-            padding: 20px;
+            background: #fff;
+            padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 400px;
+            color: #333;
+        }
+
+        .form-container h1 {
             text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
         }
 
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #555;
+        form {
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Input Fields Styling */
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
             padding: 10px;
-            margin: 10px 0;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            transition: border-color 0.3s ease;
+            font-size: 16px;
         }
 
-        input[type="text"]:focus,
-        input[type="password"]:focus {
-            border-color: #555;
+        input:focus {
             outline: none;
+            border-color: #4CAF50;
         }
 
-        /* Submit Button Styling */
-        button[type="submit"] {
-            background-color: #555;
+        button {
+            padding: 10px;
+            background: #4CAF50;
             color: #fff;
-            padding: 10px 15px;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            margin-top: 10px;
+            transition: background 0.3s;
         }
 
-        button[type="submit"]:hover {
-            background-color: #333;
+        button:hover {
+            background: #388E3C;
         }
 
-        /* Error Message */
-        .error-message {
-            color: red;
-            margin: 10px 0;
+        p {
+            text-align: center;
             font-size: 14px;
         }
 
-        /* Links */
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         a {
-            color: #555;
+            color: #4CAF50;
             text-decoration: none;
-            transition: color 0.2s ease;
+            font-weight: bold;
         }
 
         a:hover {
-            color: #333;
+            text-decoration: underline;
         }
+
     </style>
 </head>
 <body>
@@ -150,8 +159,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
             <button type="submit">Login</button>
         </form>
         <p style="margin-top: 10px; font-size: 14px;">

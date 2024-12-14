@@ -1,6 +1,7 @@
 <?php
 require_once 'db.php';
 session_start();
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header('Location: login.php');
     exit;
@@ -15,7 +16,6 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Check if all fields are set in POST
     if (isset($_POST['phone'], $_POST['address'], $_POST['waste_type'], $_POST['comments'], $_POST['scheduled_date'], $_POST['scheduled_time'])) {
         $phone = $_POST['phone'];
         $address = $_POST['address'];
@@ -47,63 +47,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Schedule Waste Pick-Up</title>
     <style>
-        /* General Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Body & Background */
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #e0eafc, #cfdef3);
+            background: linear-gradient(to right, #4CAF50, #81C784);
             color: #333;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            padding: 10px;
+            align-items: center;
+            padding: 20px;
         }
 
-        /* Header */
         header {
-            background: #4CAF50;
+            background: #388E3C;
             color: white;
-            padding: 10px 20px;
             width: 100%;
+            padding: 15px;
             text-align: center;
-            font-size: 1.5em;
-            border-radius: 8px 8px 0 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-size: 1.8em;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-container {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            color: #388E3C;
             margin-bottom: 20px;
         }
 
-        /* Main Content Area */
-        .content-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            margin-bottom: 30px;
-            transition: transform 0.2s ease;
-        }
-
-        /* Form styling */
         form label {
             display: block;
-            margin: 10px 0 5px;
+            margin-bottom: 8px;
+            font-weight: bold;
         }
 
         form input,
@@ -114,16 +120,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 1em;
+        }
+
+        form input:focus,
+        form select:focus,
+        form textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
         }
 
         form button {
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 5px;
+            font-size: 1em;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
+
+        form button:hover {
+            background-color: #388E3C;
+        }
+
+        .logout-btn {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .logout-btn:hover {
+            color: #388E3C;
+        }
+
+        .welcome-message {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            color: #333;
+        }
+
     </style>
 </head>
 <body>
@@ -141,32 +183,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="content-container">
         <h2>Schedule Waste Pick-Up</h2>
         <form method="POST">
+            <label for="phone">Phone Number</label>
+            <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>
 
-    <label for="phone">Phone Number</label>
-    <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Enter your address" required>
 
-    <label for="address">Address</label>
-    <input type="text" id="address" name="address" placeholder="Enter your address" required>
+            <label for="waste_type">Type of Waste</label>
+            <select id="waste_type" name="waste_type" required>
+                <option value="organic">Organic</option>
+                <option value="recyclable">Recyclable</option>
+                <option value="hazardous">Hazardous</option>
+                <option value="general">General</option>
+            </select>
 
-    <label for="waste_type">Type of Waste</label>
-    <select id="waste_type" name="waste_type" required>
-        <option value="organic">Organic</option>
-        <option value="recyclable">Recyclable</option>
-        <option value="hazardous">Hazardous</option>
-        <option value="general">General</option>
-    </select>
+            <label for="scheduled_date">Scheduled Date</label>
+            <input type="date" id="scheduled_date" name="scheduled_date" required>
 
-    <label for="scheduled_date">Scheduled Date</label>
-    <input type="date" id="scheduled_date" name="scheduled_date" required>
+            <label for="scheduled_time">Scheduled Time</label>
+            <input type="time" id="scheduled_time" name="scheduled_time" required>
 
-    <label for="scheduled_time">Scheduled Time</label>
-    <input type="time" id="scheduled_time" name="scheduled_time" required>
+            <label for="comments">Additional Comments</label>
+            <textarea id="comments" name="comments" placeholder="Enter any additional details here..."></textarea>
 
-    <label for="comments">Additional Comments</label>
-    <textarea id="comments" name="comments" placeholder="Enter any additional details here..."></textarea>
-
-    <button type="submit">Submit Schedule</button>
-</form>
+            <button type="submit">Submit Schedule</button>
+        </form>
 
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>

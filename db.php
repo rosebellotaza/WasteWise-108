@@ -1,9 +1,9 @@
 <?php
 $host = 'localhost';
 $port = '5432';
-$dbname = 'WasteWise';
-$user = 'postgres';
-$password = 'admin';
+$dbname = 'WW';
+$user = 'admin';
+$password = 'rosebell';
 
 try {
     // PDO connection
@@ -20,4 +20,5 @@ if (isset($_SESSION['user_id'])) {
     // Set the user_id in a session variable or in the database connection
     $pdo->exec("SET myapp.user_id = {$logged_in_user_id}");
 }
+
 ?>
