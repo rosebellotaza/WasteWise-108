@@ -130,7 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             outline: none;
         }
 
+
         form button {
+            width: auto; /* Adjust width to auto */
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -149,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: block;
             text-align: center;
             margin-top: 15px;
-            color: #4CAF50;
+            color:red;
             text-decoration: none;
             font-weight: bold;
             transition: color 0.3s;
@@ -208,6 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <button type="submit">Submit Schedule</button>
         </form>
+        <br>
 
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>

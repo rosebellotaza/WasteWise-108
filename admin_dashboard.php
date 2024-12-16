@@ -331,7 +331,7 @@ table tbody tr:hover {
             type="text" 
             id="search" 
             name="search" 
-            placeholder="Search by phone, address, waste type, or date"
+            placeholder="Search here"
             value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>"
             style="width: 100%; padding: 10px; margin-bottom: 10px;"
         />
@@ -359,17 +359,21 @@ table tbody tr:hover {
         // Search query logic
         $search = $_GET['search'] ?? '';
         $query = "
-            SELECT s.*, u.username 
-            FROM schedules s 
-            JOIN users u ON s.user_id = u.id
-            WHERE (
-                s.phone ILIKE :search OR 
-                s.address ILIKE :search OR 
-                s.waste_type ILIKE :search OR 
-                CAST(s.scheduled_date AS TEXT) ILIKE :search
-            )
-            ORDER BY s.created_at DESC
-        ";
+        SELECT s.*, u.username 
+        FROM schedules s 
+        JOIN users u ON s.user_id = u.id
+        WHERE (
+            s.phone ILIKE :search OR 
+            s.address ILIKE :search OR 
+            s.waste_type ILIKE :search OR 
+            CAST(s.scheduled_date AS TEXT) ILIKE :search OR 
+            u.username ILIKE :search OR 
+            CAST(s.scheduled_time AS TEXT) ILIKE :search OR 
+            s.comments ILIKE :search OR
+            CAST(s.created_at AS TEXT) ILIKE :search
+        )
+        ORDER BY s.created_at DESC
+    ";       
         $stmt = $pdo->prepare($query);
         $stmt->execute([':search' => '%' . $search . '%']);
         $filtered_schedules = $stmt->fetchAll();
