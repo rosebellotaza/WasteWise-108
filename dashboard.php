@@ -168,13 +168,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #333;
         }
 
+        header {
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: flex-start; /* Align items to the top of the header */
+    padding: 15px;
+}
+
+    .profile-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 100px;
+        }
+
+        .profile-container a {
+            color: white;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+
+        header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+.title {
+    margin-right: 120px;
+    text-align: center;
+    flex-grow: 1;
+}
+
+
     </style>
 </head>
 <body>
     <!-- Header -->
     <header>
-        Waste Wise Management System
-    </header>
+    <div class="profile-container">
+        <a href="user_profile.php">
+            <img src="uploads/user-icom.png" alt="Logo" class="profile-icon">
+        </a>
+    </div>
+    <div class="title">
+        <h4>Waste Wise Management System</h4>
+        </div>
+</header>
+
 
     <!-- Welcome Message -->
     <div class="welcome-message">

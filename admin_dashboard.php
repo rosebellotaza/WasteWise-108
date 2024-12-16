@@ -309,17 +309,59 @@ table tbody tr:hover {
     }
 }
 
+/* Header styling */
+.header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #4CAF50; /* Green theme */
+            color: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Profile icon on the left */
+        .profile-icon {
+            width: 50px; /* Icon size */
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%; /* Makes the icon circular */
+        }
+
+        /* Centered Dashboard title */
+        .header h1 {
+            margin: 0;
+            flex-grow: 1; /* Pushes the logout button to the right */
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        /* Logout link on the right */
+        .logout {
+            color: white;
+            text-decoration: none;
+            background-color: #D9534F; /* Red button for logout */
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .logout:hover {
+            background-color: #C9302C;
+        }
+
     </style>
 </head>
 <body>
     <div class="header">
+    <a href="admin_profile.php">
+            <img src="uploads/user-icom.png" alt="Logo" class="profile-icon">
+        </a>
         <h1>Admin Dashboard</h1>
         <a href="?logout=true" class="logout">Logout</a>
     </div>
 
     <!-- Add Schedule Section -->
-<!-- Add Schedule Section -->
-<!-- Add Schedule Section -->
 <div class="container">
 <h2>Search and Manage Schedules</h2>
 

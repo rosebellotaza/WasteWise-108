@@ -139,19 +139,6 @@ $schedules = $stmt->fetchAll();
         .header h1 {
             margin: 0;
         }
-        .logout {
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            background-color: #d32f2f;
-            border-radius: 5px;
-            float: right;
-            margin-top: -40px;
-            margin-right: 20px;
-        }
-        .logout:hover {
-            background-color: #b71c1c;
-        }
         .container {
             width: 80%;
             margin: 30px auto;
@@ -229,11 +216,56 @@ $schedules = $stmt->fetchAll();
         form button:hover {
             background-color: #45a049;
         }
+
+/* Header styling */
+.header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #4CAF50; /* Green theme */
+            color: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Profile icon on the left */
+        .profile-icon {
+            width: 50px; /* Icon size */
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%; /* Makes the icon circular */
+        }
+
+        /* Centered Dashboard title */
+        .header h1 {
+            margin: 0;
+            flex-grow: 1; /* Pushes the logout button to the right */
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        /* Logout link on the right */
+        .logout {
+            color: white;
+            text-decoration: none;
+            background-color: #D9534F; /* Red button for logout */
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .logout:hover {
+            background-color: #C9302C;
+        }
+
     </style>
 </head>
 <body>
     <!-- Header and logout button -->
     <div class="header">
+        <a href="collector_profile.php">
+            <img src="uploads/user-icom.png" alt="Logo" class="profile-icon">
+        </a>
         <h1>Collector Dashboard</h1>
         <a href="?logout=true" class="logout">Logout</a>
     </div>
