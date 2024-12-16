@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .logo-container img {
-            width: 120px;
+            width: 300px;
             height: auto;
         }
 

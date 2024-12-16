@@ -20,6 +20,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'collector') {
     die('Access Denied');
 }
 
+
+
 // Handle Insert
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     try {
@@ -32,15 +34,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     }
 }
 
-// Handle Delete
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+//Delete a Schedule
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $schedule_id = $_POST['schedule_id'];
+
+    $query = "DELETE FROM schedules WHERE id = :id";
+    $stmt = $pdo->prepare($query);
+
     try {
-        $stmt = $pdo->prepare('DELETE FROM schedules WHERE id = ?');
-        $stmt->execute([$_POST['schedule_id']]);
+        $stmt->execute([':id' => $schedule_id]);
         header('Location: collector_dashboard.php');
         exit;
     } catch (Exception $e) {
-        die('Error deleting schedule: ' . $e->getMessage());
+        echo "Error: " . $e->getMessage();
     }
 }
 
@@ -140,7 +146,8 @@ $schedules = $stmt->fetchAll();
             background-color: #d32f2f;
             border-radius: 5px;
             float: right;
-            margin-top: -50px;
+            margin-top: -40px;
+            margin-right: 20px;
         }
         .logout:hover {
             background-color: #b71c1c;
