@@ -213,6 +213,14 @@ body {
         .btn-delete:hover {
             background-color: #d32f2f;
         }
+        .btn-search {
+            background-color: #4CAF50;
+            color: white;
+            height: 50px;
+            width: 100px;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
 
 .container h2 {
     color: #333;
@@ -313,7 +321,85 @@ table tbody tr:hover {
 <!-- Add Schedule Section -->
 <!-- Add Schedule Section -->
 <div class="container">
-    <h2>Add New Schedule</h2>
+<h2>Search and Manage Schedules</h2>
+
+<!-- Search Form -->
+<form method="GET" action="admin_dashboard.php">
+    <div class="form-group">
+        <label for="search">Search Schedules</label>
+        <input 
+            type="text" 
+            id="search" 
+            name="search" 
+            placeholder="Search by phone, address, waste type, or date"
+            value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>"
+            style="width: 100%; padding: 10px; margin-bottom: 10px;"
+        />
+    </div>
+    <button type="submit" class="btn btn-search">Search</button>
+</form>
+
+<!-- Schedule Table -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Waste Type</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Comments</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        // Search query logic
+        $search = $_GET['search'] ?? '';
+        $query = "
+            SELECT s.*, u.username 
+            FROM schedules s 
+            JOIN users u ON s.user_id = u.id
+            WHERE (
+                s.phone ILIKE :search OR 
+                s.address ILIKE :search OR 
+                s.waste_type ILIKE :search OR 
+                CAST(s.scheduled_date AS TEXT) ILIKE :search
+            )
+            ORDER BY s.created_at DESC
+        ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([':search' => '%' . $search . '%']);
+        $filtered_schedules = $stmt->fetchAll();
+
+        if (count($filtered_schedules) > 0):
+            foreach ($filtered_schedules as $schedule):
+        ?>
+            <tr>
+                <td><?php echo htmlspecialchars($schedule['id']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['username']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['phone']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['address']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['waste_type']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['scheduled_date']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['scheduled_time']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['comments']); ?></td>
+                <td><?php echo htmlspecialchars($schedule['created_at']); ?></td>
+            </tr>
+        <?php
+            endforeach;
+        else:
+        ?>
+            <tr>
+                <td colspan="10" style="text-align:center;">No schedules found.</td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+<div class="container">
+<h2>Add New Schedule</h2>
     <form method="POST" action="">
         <input type="hidden" name="action" value="insert">
         <div class="form-group">
@@ -436,6 +522,8 @@ table tbody tr:hover {
         </div>
     <?php endif; ?>
 
+</div>
+    
     <!-- Activity Logs Section -->
     <div class="container mt-5">
         <div class="row">
