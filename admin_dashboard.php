@@ -52,15 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':comments' => $comments,
                 ':id' => $schedule_id
             ]);
-            echo "Schedule updated successfully.";
+            $_SESSION['success_message'] = 'Schedule updated successfully!';
             header('Location: admin_dashboard.php');
             exit;
         } catch (Exception $e) {
-            echo "Error updating schedule: " . $e->getMessage();
+            $_SESSION['error_message'] = 'Error updating schedule: ' . $e->getMessage();
         }
     } 
 }
-
 
 // Insert a new schedule
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'insert') {
@@ -96,14 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':scheduled_time' => $scheduled_time,
                 ':comments' => $comments
             ]);
-            echo "Schedule added successfully.";
+            $_SESSION['success_message'] = 'Schedule added successfully!';
             header('Location: admin_dashboard.php');
             exit;
         } catch (Exception $e) {
-            echo "Error: " . $e->getMessage();
+            $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
         }
     } else {
-        echo "User not found.";
+        $_SESSION['error_message'] = 'User not found.';
     }
 }
 
@@ -116,10 +115,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     try {
         $stmt->execute([':id' => $schedule_id]);
+        $_SESSION['success_message'] = 'Schedule deleted successfully!';
         header('Location: admin_dashboard.php');
         exit;
     } catch (Exception $e) {
-        echo "Error: " . $e->getMessage();
+        $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
     }
 }
 
@@ -380,6 +380,16 @@ table tbody tr:hover {
     box-shadow: none; /* Remove shadow to simulate press */
 }
 
+.success {
+    margin-left: 200px;
+    color: #28a745  ;
+}
+
+.error {
+    margin-left: 200px;
+    color: red  ;
+}
+
 
     </style>
 </head>
@@ -391,6 +401,17 @@ table tbody tr:hover {
         <h1>Admin Dashboard</h1>
         <a href="?logout=true" class="logout">Logout</a>
     </div>
+
+    <?php
+if (isset($_SESSION['success_message'])) {
+    echo '<div class="success">' . $_SESSION['success_message'] . '</div>';
+    unset($_SESSION['success_message']);
+}
+if (isset($_SESSION['error_message'])) {
+    echo '<div class="error">' . $_SESSION['error_message'] . '</div>';
+    unset($_SESSION['error_message']);
+}
+?>
 
     <!-- Add Schedule Section -->
 <div class="container">
