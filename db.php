@@ -2,8 +2,8 @@
 $host = 'localhost';
 $port = '5432';
 $dbname = 'WW';
-$user = 'admin';
-$password = 'rosebell';
+$user = 'postgres'; //change for admin/collector tasks
+$password = 'admin';
 
 try {
     // PDO connection

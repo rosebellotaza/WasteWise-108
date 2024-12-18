@@ -350,6 +350,37 @@ table tbody tr:hover {
             background-color: #C9302C;
         }
 
+        /* General button styling */
+.btn-summary {
+    background-color: #28a745; /* Success green color */
+    color: #fff; /* White text color */
+    font-size: 1rem; /* Base font size */
+    font-weight: 600; /* Semi-bold font */
+    padding: 10px 20px; /* Top/Bottom, Left/Right padding */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    text-decoration: none; /* Remove default underline */
+    transition: all 0.3s ease-in-out; /* Smooth transitions */
+    margin-left: 900px;
+    margin-bottom: 50px;
+}
+
+/* Hover effect */
+.btn-summary:hover {
+    background-color: #218838; /* Darker green on hover */
+    color: #f8f9fa; /* Slightly lighter white for contrast */
+    transform: translateY(-2px); /* Slight upward movement */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhance shadow on hover */
+}
+
+/* Active effect (button press) */
+.btn-summary:active {
+    background-color: #1e7e34; /* Even darker green */
+    transform: translateY(1px); /* Slight downward movement */
+    box-shadow: none; /* Remove shadow to simulate press */
+}
+
+
     </style>
 </head>
 <body>
@@ -571,51 +602,90 @@ table tbody tr:hover {
 </div>
     
     <!-- Activity Logs Section -->
-    <div class="container mt-5">
-        <div class="row">
+<div class="container mt-5">
+    <div class="row">
 
-            <!-- Main Content -->
-            <div class="col-md-9">
-                <h2 class="mb-4">Activity Logs</h2>
+        <!-- Main Content -->
+        <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Activity Logs</h2>
+        <a href="summary.php" class="btn-summary">View All Summary</a>
+    </div>
+</div>
 
-                <!-- Display Error if any -->
-                <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger"><?php echo $error; ?></div>
-                <?php endif; ?>
 
-                <table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Date & Time</th>
-            <th>User Type</th>
-            <th>Action</th>
-            <th>Table Name</th>
-            <th>Column Name</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        try {
-            // Fetch activity logs from the database
-            $stmt = $pdo->query('SELECT user_type, action, table_name, column_name, TO_CHAR(timestamp, \'YYYY-MM-DD HH24:MI\') AS formatted_timestamp FROM activity_logs ORDER BY timestamp DESC');
-            while ($row = $stmt->fetch()) {
-                echo "<tr>";
-                echo "<td>" . htmlspecialchars($row['formatted_timestamp']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['user_type']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['action']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['table_name']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['column_name']) . "</td>";
-                echo "</tr>";
-            }
-        } catch (PDOException $e) {
-            echo "<tr><td colspan='8' class='text-danger'>Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
-        }
-        ?>
-    </tbody>
-</table>
+            <!-- Display Error if any -->
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger"><?php echo $error; ?></div>
+            <?php endif; ?>
 
-            </div>
+            <!-- Filter Form -->
+            <form method="GET" action="" id="roleFilterForm">
+                <div class="role-group">
+                    <select name="role" id="role" class="form-control" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        <option value="user" <?php echo (isset($_GET['role']) && $_GET['role'] === 'user') ? 'selected' : ''; ?>>User</option>
+                        <option value="admin" <?php echo (isset($_GET['role']) && $_GET['role'] === 'admin') ? 'selected' : ''; ?>>Admin</option>
+                        <option value="collector" <?php echo (isset($_GET['role']) && $_GET['role'] === 'collector') ? 'selected' : ''; ?>>Collector</option>
+                    </select>
+                </div>
+            </form>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>User Type</th>
+                        <th>Action</th>
+                        <th>Table Name</th>
+                        <th>Column Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Get the selected role from the URL query string
+                    $roleFilter = isset($_GET['role']) ? $_GET['role'] : '';
+
+                    // Start building the SQL query
+                    $query = 'SELECT user_type, action, table_name, column_name, TO_CHAR(timestamp, \'YYYY-MM-DD HH24:MI\') AS formatted_timestamp FROM activity_logs';
+
+                    // Apply the role filter if one is selected
+                    if ($roleFilter) {
+                        $query .= ' WHERE user_type = :role';
+                    }
+
+                    $query .= ' ORDER BY timestamp DESC';
+
+                    try {
+                        // Prepare and execute the query
+                        $stmt = $pdo->prepare($query);
+
+                        // Bind the role filter parameter if applicable
+                        if ($roleFilter) {
+                            $stmt->bindParam(':role', $roleFilter, PDO::PARAM_STR);
+                        }
+
+                        $stmt->execute();
+
+                        // Display the logs
+                        while ($row = $stmt->fetch()) {
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($row['formatted_timestamp']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['user_type']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['action']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['table_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['column_name']) . "</td>";
+                            echo "</tr>";
+                        }
+                    } catch (PDOException $e) {
+                        echo "<tr><td colspan='5' class='text-danger'>Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+
         </div>
     </div>
+</div>
 </body>
 </html>
