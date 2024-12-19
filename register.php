@@ -176,8 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="role">Role:</label>
             <select id="role" name="role" required>
                 <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="collector">Collector</option>
+                <!-- <option value="admin">Admin</option>
+                <option value="collector">Collector</option> -->
             </select>
 
             <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">

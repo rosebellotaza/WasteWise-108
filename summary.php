@@ -68,8 +68,8 @@ echo "<!DOCTYPE html>
         }
         p, h3 {
         text-align: center;
-        }  
-        .back-btn {
+        }   
+                .back-btn {
     display: inline-block;
     margin: 20px;
     padding: 10px 20px;
@@ -86,7 +86,6 @@ echo "<!DOCTYPE html>
     background-color: #1b5e20; /* Darker green on hover */
     transform: translateY(-2px);
 }
-
     </style>
 </head>
 <body>";
@@ -144,7 +143,7 @@ try {
                 <th>User ID</th>
                 <th>Username</th>
                 <th>Total Schedules</th>
-                <th>Next Schedule Date</th>
+                <th>Earliest Schedule Date</th>
                 <th>Last Schedule Date</th>
             </tr>";
     foreach ($results as $row) {
@@ -186,6 +185,7 @@ try {
 try {
     $query = $pdo->query("SELECT * FROM monthly_waste_summary");
     $results = $query->fetchAll(PDO::FETCH_ASSOC);
+
     echo "<br><br><h2>Monthly Waste Summary</h2>";
     echo "<table>
             <tr>
@@ -200,9 +200,35 @@ try {
                 <td>{$row['total_collections']}</td>
             </tr>";
     }
+
     echo "</table>";
+    echo '<div style="text-align: center; margin-top: 20px;">
+            <form method="POST">
+                <input type="hidden" name="action" value="refresh">
+                <button type="submit" style="
+                    background-color: #1b5e20; 
+                    color: white; 
+                    border: none; 
+                    padding: 10px 20px; 
+                    font-size: 12px; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    transition: background-color 0.3s ease;">
+                    Refresh
+                </button>
+            </form>
+          </div>';
 } catch (PDOException $e) {
-    echo "<p>Error fetching data: " . $e->getMessage() . "</p>";
+    echo "<p style='color: red;'>Error fetching data: " . $e->getMessage() . "</p>";
+}
+
+// Refresh materialized view when the button is clicked
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'refresh') {
+    try {
+        $pdo->exec("REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_waste_summary");
+    } catch (PDOException $e) {
+        echo "<p style='color: red; text-align: center;'>Error refreshing materialized view: " . $e->getMessage() . "</p>";
+    }
 }
 
 echo "<br><h2>Total Waste Collections for a Specific Type</h2>";
